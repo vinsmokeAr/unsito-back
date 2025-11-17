@@ -1,0 +1,133 @@
+@api_url = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjkxYWNjMGI4YmY5N2U3MzFjMGIzMjMxIn0sImlhdCI6MTc2MzM2Mzk3MSwiZXhwIjoxNzYzMzY3NTcxfQ.lAZdCqvC987sv8QNk_kAyqT_d3ja0tN4FiW6OJ7Ahfo
+
+### AUTH
+### Register a new user
+POST {{api_url}}/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "arleth",
+    "email": "arleth@gmail.com",
+    "password": "kira"
+}
+
+### Login a user
+POST {{api_url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "arleth@gmail.com",
+    "password": "kira"
+}
+
+### CATEGORIAS
+### Get all categories
+GET {{api_url}}/categorias
+
+### Create a new category
+POST {{api_url}}/categorias
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Ciencia y tecnología"
+}
+
+### Update a category
+PUT {{api_url}}/categorias/691acd0d8bf97e731c0b323a
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Ciencias"
+}
+
+### Delete a category
+DELETE {{api_url}}/categorias/691acdf08bf97e731c0b3242
+Authorization: Bearer {{token}}
+
+### PUBLICACIONES
+### Get all publications
+GET {{api_url}}/publicaciones?limit=3&page=5
+
+### Get featured publications
+GET {{api_url}}/publicaciones/destacadas
+
+### Get a publication by id
+GET {{api_url}}/publicaciones/691acea18bf97e731c0b324d
+
+### Create a new publication
+POST {{api_url}}/publicaciones
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "test",
+    "resumen": "test",
+    "contenido_completo": "test",
+    "autor": "test",
+    "es_destacado": true,
+    "tipo": "Noticia",
+    "categoria": "691acd0d8bf97e731c0b323a",
+    "fecha_evento_inicio": "2021-01-01",
+    "fecha_evento_cierre": "2021-01-01",
+    "imagen_principal_url": "test",
+    "imagenes_carousel": [
+        {
+            "url": "test"
+        }
+    ],
+    "adjuntos": [
+        {
+            "titulo": "test",
+            "url": "test"
+        } 
+    ]
+}
+
+### Update a publication
+PUT {{api_url}}/publicaciones/691acea18bf97e731c0b324d
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "Semana de la cultura"
+}
+
+### Delete a publication
+DELETE {{api_url}}/publicaciones/691acea18bf97e731c0b324d
+Authorization: Bearer {{token}}
+
+### GACETAS
+### Get all gacetas
+GET {{api_url}}/gacetas
+
+### Create a new gaceta
+POST {{api_url}}/gacetas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "test",
+    "mes": 1,
+    "ano": 2021,
+    "url_pdf": "test"
+}
+
+### Delete a gaceta
+DELETE {{api_url}}/gacetas/66441e4a704788698edad0b7
+Authorization: Bearer {{token}}
+
+### UPLOAD
+### Upload a file
+POST {{api_url}}/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+test
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
