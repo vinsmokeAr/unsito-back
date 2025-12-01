@@ -1,0 +1,152 @@
+@api_base_url = http://localhost:3000/api
+
+# ---------------------------------
+# Auth Endpoints
+# ---------------------------------
+
+### Register a new admin (run this only once or for new admins)
+POST {{api_base_url}}/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "Admin User",
+    "email": "admin@example.com",
+    "password": "password123"
+}
+
+### Login as admin to get auth token
+# @name login
+POST {{api_base_url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "password123"
+}
+
+# Capture the auth token from the login response
+@token = {{login.response.body.token}}
+
+
+# ---------------------------------
+# Categorias Endpoints
+# ---------------------------------
+
+### Get all categories (Public)
+GET {{api_base_url}}/categorias
+
+### Create a new category (Admin)
+POST {{api_base_url}}/categorias
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Eventos Académicos"
+}
+
+### Update a category (Admin)
+# Replace :id with an actual category ID
+PUT {{api_base_url}}/categorias/YOUR_CATEGORY_ID
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Eventos Culturales"
+}
+
+### Delete a category (Admin)
+# Replace :id with an actual category ID
+DELETE {{api_base_url}}/categorias/YOUR_CATEGORY_ID
+Authorization: Bearer {{token}}
+
+
+# ---------------------------------
+# Publicaciones Endpoints
+# ---------------------------------
+
+### Get all publications (Public, with filters)
+GET {{api_base_url}}/publicaciones?tipo=Noticia&page=1&limit=5
+
+### Get featured publications (Public)
+GET {{api_base_url}}/publicaciones/destacadas
+
+### Get a single publication by ID (Public)
+# Replace :id with an actual publication ID
+GET {{api_base_url}}/publicaciones/YOUR_PUBLICATION_ID
+
+### Create a new publication (Admin)
+# First, get a valid category ID from the GET /categorias endpoint
+POST {{api_base_url}}/publicaciones
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "Nueva Convocatoria de Becas",
+    "resumen": "Se abren nuevas oportunidades de becas para estudiantes de posgrado.",
+    "contenido_completo": "El contenido detallado de la convocatoria, requisitos y fechas importantes.",
+    "autor": "Rectoría",
+    "es_destacado": true,
+    "tipo": "Convocatoria",
+    "categoria": "YOUR_CATEGORY_ID",
+    "imagen_principal_url": "http://example.com/imagen.jpg"
+}
+
+### Update a publication (Admin)
+# Replace :id with an actual publication ID
+PUT {{api_base_url}}/publicaciones/YOUR_PUBLICATION_ID
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "Título Actualizado de la Publicación"
+}
+
+### Delete a publication (Admin)
+# Replace :id with an actual publication ID
+DELETE {{api_base_url}}/publicaciones/YOUR_PUBLICATION_ID
+Authorization: Bearer {{token}}
+
+
+# ---------------------------------
+# Gacetas Endpoints
+# ---------------------------------
+
+### Get all gacetas (Public, with filters)
+GET {{api_base_url}}/gacetas?ano=2024&mes=11
+
+### Create a new gaceta (Admin)
+POST {{api_base_url}}/gacetas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "titulo": "Gaceta Mensual - Noviembre 2025",
+    "mes": 11,
+    "ano": 2025,
+    "url_pdf": "http://example.com/gaceta_nov_2025.pdf"
+}
+
+### Delete a gaceta (Admin)
+# Replace :id with an actual gaceta ID
+DELETE {{api_base_url}}/gacetas/YOUR_GACETA_ID
+Authorization: Bearer {{token}}
+
+
+# ---------------------------------
+# File Upload Endpoint
+# ---------------------------------
+
+### Upload a file (Admin)
+# This requires a multipart/form-data request, which is best handled
+# by the REST Client extension's UI or by manually crafting the request.
+# Create a file named 'test.txt' or similar in your project root.
+POST {{api_base_url}}/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: image/png
+
+< ./path/to/your/test/file.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

@@ -7,30 +7,55 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(express.json()); // For parsing application/json
+app.use(express.json()); // Para analizar application/json
 
-// Serve static files from the 'uploads' directory - Es temporal para pruebas
+// Sirve archivos estáticos desde el directorio 'uploads' - Es temporal para pruebas
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const connectDB = require('./src/config/database');
 
-// Database Connection
+// Conexion a la bd
 connectDB();
 
-// Basic Route
+// Ruta básica
 app.get('/', (req, res) => {
     res.send('Todo correcto en el UNSITO Backend!');
 });
 
-// Import and use routes
+// Rutas de importación y uso
 const apiRoutes = require('./src/routes');
 app.use('/api', apiRoutes);
 
-// Error handling middleware (should be the last middleware)
+// Swagger Configuration
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Unsito API',
+      version: '1.0.0',
+      description: 'Documentación de la API para el proyecto Unsito',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+      },
+    ],
+  },
+  apis: ['./src/routes/*.js', './src/models/*.js'], // Rutas a los archivos que contienen las anotaciones
+};
+
+const specs = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+
+// Middleware de manejo de errores (debería ser el último middleware)
 const errorHandler = require('./src/middlewares/errorHandler');
 app.use(errorHandler);
 
-// Start the server
+// Iniciar el server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

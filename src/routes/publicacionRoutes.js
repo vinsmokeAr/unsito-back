@@ -3,7 +3,7 @@ const router = express.Router();
 const publicacionController = require('../controllers/publicacionController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Rutas públicas
+// Rutas públicas   
 router.get('/', publicacionController.getPublicaciones);
 router.get('/destacadas', publicacionController.getPublicacionesDestacadas);
 router.get('/:id', publicacionController.getPublicacionById);
