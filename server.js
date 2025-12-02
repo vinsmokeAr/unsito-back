@@ -43,6 +43,15 @@ const options = {
         url: `http://localhost:${PORT}`,
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
   apis: ['./src/routes/*.js', './src/models/*.js'], // Rutas a los archivos que contienen las anotaciones
 };
