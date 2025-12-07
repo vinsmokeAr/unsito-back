@@ -30,6 +30,34 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.get('/', categoriaController.getCategorias);
 
 // Rutas administrativas (protegidas)
+/**
+ * @swagger
+ * /api/categorias:
+ *   post:
+ *     summary: Crea una nueva categoría
+ *     tags: [Categorias]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Categoria'
+ *     responses:
+ *       201:
+ *         description: Categoría creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Categoria'
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
 router.post('/', authMiddleware, categoriaController.createCategoria);
 router.put('/:id', authMiddleware, categoriaController.updateCategoria);
 router.delete('/:id', authMiddleware, categoriaController.deleteCategoria);
