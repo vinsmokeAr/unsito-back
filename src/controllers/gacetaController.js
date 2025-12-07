@@ -45,6 +45,32 @@ exports.createGaceta = async (req, res) => {
     }
 };
 
+
+// @ruta PUT api/gacetas/:id
+// @desc Actualizar una gaceta
+// @access Privado (Administrador)
+exports.updateGaceta = async (req, res) => {
+    const { titulo, mes, ano, url_pdf } = req.body;
+
+    try {
+        let gaceta = await Gaceta.findById(req.params.id);
+        if (!gaceta) {
+            return res.status(404).json({ msg: 'Gaceta not found' });
+        }
+
+        gaceta.titulo = titulo || gaceta.titulo;
+        gaceta.mes = mes || gaceta.mes;
+        gaceta.ano = ano || gaceta.ano;
+        gaceta.url_pdf = url_pdf || gaceta.url_pdf;
+
+        await gaceta.save();
+        res.json(gaceta);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // @ruta BORRAR api/gacetas/:id
 // @desc Eliminar una gaceta
 // @access Privado (Administrador)

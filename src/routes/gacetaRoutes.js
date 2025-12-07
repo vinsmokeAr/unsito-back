@@ -60,6 +60,44 @@ router.get('/', gacetaController.getGacetas);
  *         description: Error del servidor
  */
 router.post('/', authMiddleware, gacetaController.createGaceta);
+router.put('/:id', authMiddleware, gacetaController.updateGaceta);
+/**
+ * @swagger
+ * /api/gacetas/{id}:
+ *   put:
+ *     summary: Actualiza una gaceta existente
+ *     tags: [Gacetas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la gaceta a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Gaceta'
+ *     responses:
+ *       200:
+ *         description: Gaceta actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Gaceta'
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Gaceta no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
 /**
  * @swagger
  * /api/gacetas/{id}:
