@@ -60,7 +60,6 @@ router.get('/', gacetaController.getGacetas);
  *         description: Error del servidor
  */
 router.post('/', authMiddleware, gacetaController.createGaceta);
-router.put('/:id', authMiddleware, gacetaController.updateGaceta);
 /**
  * @swagger
  * /api/gacetas/{id}:
@@ -98,6 +97,7 @@ router.put('/:id', authMiddleware, gacetaController.updateGaceta);
  *       500:
  *         description: Error del servidor
  */
+router.put('/:id', authMiddleware, gacetaController.updateGaceta);
 /**
  * @swagger
  * /api/gacetas/{id}:
