@@ -59,7 +59,69 @@ router.get('/', categoriaController.getCategorias);
  *         description: Error del servidor
  */
 router.post('/', authMiddleware, categoriaController.createCategoria);
+/**
+ * @swagger
+ * /api/categorias/{id}:
+ *   put:
+ *     summary: Actualiza una categoría existente
+ *     tags: [Categorias]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la categoría a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Categoria'
+ *     responses:
+ *       200:
+ *         description: Categoría actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Categoria'
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Categoría no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
 router.put('/:id', authMiddleware, categoriaController.updateCategoria);
+/**
+ * @swagger
+ * /api/categorias/{id}:
+ *   delete:
+ *     summary: Elimina una categoría por su ID
+ *     tags: [Categorias]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la categoría a eliminar
+ *     responses:
+ *       200:
+ *         description: Categoría eliminada exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Categoría no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
 router.delete('/:id', authMiddleware, categoriaController.deleteCategoria);
 
 module.exports = router;
