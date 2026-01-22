@@ -17,9 +17,13 @@ const connectDB = require('./src/config/database');
 // Conexion a la bd
 connectDB();
 
+// Middleware de logging de peticiones HTTP
+const requestLogger = require('./src/middlewares/requestLogger');
+app.use(requestLogger);
+
 // Ruta básica
 app.get('/', (req, res) => {
-    res.send('Todo correcto en el UNSITO Backend!');
+  res.send('Todo correcto en el UNSITO Backend!');
 });
 
 // Rutas de importación y uso
@@ -65,6 +69,12 @@ const errorHandler = require('./src/middlewares/errorHandler');
 app.use(errorHandler);
 
 // Iniciar el server
+const logger = require('./src/utils/logger').createContextLogger('Server');
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  logger.info('Server started successfully', {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    loggingEnabled: true
+  });
 });
