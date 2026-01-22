@@ -12,7 +12,6 @@
  *         - es_destacado
  *         - tipo
  *         - categoria
- *         - imagen_principal_url
  *       properties:
  *         _id:
  *           type: string
@@ -54,7 +53,7 @@
  *           description: Fecha de cierre del evento (si el tipo es Evento)
  *         imagen_principal_url:
  *           type: string
- *           description: URL de la imagen principal de la publicación
+ *           description: URL de la imagen principal de la publicación (opcional, se puede agregar al editar)
  *         imagenes_carousel:
  *           type: array
  *           items:
@@ -62,7 +61,7 @@
  *             properties:
  *               url:
  *                 type: string
- *           description: URLs de las imágenes para el carrusel
+ *           description: URLs de las imágenes para el carrusel (opcional, se puede agregar al editar)
  *         adjuntos:
  *           type: array
  *           items:
@@ -72,7 +71,7 @@
  *                 type: string
  *               url:
  *                 type: string
- *           description: Lista de adjuntos (archivos, enlaces)
+ *           description: Lista de adjuntos - archivos, enlaces (opcional, se puede agregar al editar)
  *       example:
  *         _id: "60c72b2f9b1d8e001c8e4a1a"
  *         titulo: "Nueva Publicación Importante"
@@ -141,7 +140,7 @@ const publicacionSchema = new mongoose.Schema({
     },
     imagen_principal_url: {
         type: String,
-        required: true
+        required: false // Opcional - se puede agregar al editar
     },
     imagenes_carousel: [
         {
