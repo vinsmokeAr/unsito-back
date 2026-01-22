@@ -24,15 +24,27 @@ const storage = multer.diskStorage({
     }
 });
 
-// Filtro para validar tipos de archivo (solo imágenes)
+// Filtro para validar tipos de archivo (imágenes y documentos)
 const fileFilter = (req, file, cb) => {
     // Tipos MIME permitidos
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+    const allowedMimeTypes = [
+        // Imágenes
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/bmp',
+        // Documentos
+        'application/pdf',
+        'application/msword', // .doc
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+    ];
 
     if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP, BMP)'), false);
+        cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP, BMP) y documentos (PDF, DOC, DOCX)'), false);
     }
 };
 

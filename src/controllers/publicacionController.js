@@ -196,3 +196,136 @@ exports.deletePublicacion = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @route POST api/publicaciones/:id/upload
+// @desc Subir archivos asociados a una publicación
+// @access Privado (Admin)
+exports.uploadPublicacionFiles = async (req, res) => {
+    try {
+        // 1. Validar que la publicación existe
+        const publicacion = await Publicacion.findById(req.params.id);
+        if (!publicacion) {
+            return res.status(404).json({
+                success: false,
+                message: 'Publicación no encontrada'
+            });
+        }
+
+        // 2. Validar que se recibieron archivos
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se recibieron archivos'
+            });
+        }
+
+        // 3. Validar query param 'tipo'
+        const { tipo } = req.query;
+        const tiposValidos = ['imagen_principal', 'imagenes_carousel', 'adjuntos'];
+
+        if (!tipo || !tiposValidos.includes(tipo)) {
+            return res.status(400).json({
+                success: false,
+                message: `Tipo inválido. Debe ser uno de: ${tiposValidos.join(', ')}`
+            });
+        }
+
+        // 4. Construir URLs relativas
+        const archivosSubidos = req.files.map(file => ({
+            filename: file.filename,
+            originalName: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            urlRelativa: `/uploads/${file.filename}`,
+            urlAbsoluta: `${process.env.API_BASE_URL}/uploads/${file.filename}`
+        }));
+
+        // 5. Actualizar publicación según el tipo
+        let updateData = {};
+        let mensaje = '';
+
+        switch (tipo) {
+            case 'imagen_principal':
+                // Solo tomar el primer archivo
+                updateData.imagen_principal_url = archivosSubidos[0].urlRelativa;
+                mensaje = 'Imagen principal actualizada exitosamente';
+                break;
+
+            case 'imagenes_carousel':
+                // Agregar todas las imágenes al carousel
+                const nuevasImagenesCarousel = archivosSubidos.map(archivo => ({
+                    url: archivo.urlRelativa
+                }));
+                updateData.$push = {
+                    imagenes_carousel: { $each: nuevasImagenesCarousel }
+                };
+                mensaje = `${archivosSubidos.length} imagen(es) agregada(s) al carousel`;
+                break;
+
+            case 'adjuntos':
+                // Agregar todos los adjuntos
+                const nuevosAdjuntos = archivosSubidos.map(archivo => ({
+                    titulo: archivo.originalName,
+                    url: archivo.urlRelativa
+                }));
+                updateData.$push = {
+                    adjuntos: { $each: nuevosAdjuntos }
+                };
+                mensaje = `${archivosSubidos.length} adjunto(s) agregado(s)`;
+                break;
+        }
+
+        // 6. Actualizar en base de datos
+        const publicacionActualizada = await Publicacion.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        ).populate('categoria', 'nombre');
+
+        // 7. Construir respuesta con URLs absolutas
+        const respuesta = publicacionActualizada.toObject();
+
+        // Convertir URLs relativas a absolutas en la respuesta
+        if (respuesta.imagen_principal_url) {
+            respuesta.imagen_principal_url = `${process.env.API_BASE_URL}${respuesta.imagen_principal_url}`;
+        }
+
+        if (respuesta.imagenes_carousel) {
+            respuesta.imagenes_carousel = respuesta.imagenes_carousel.map(img => ({
+                ...img,
+                url: `${process.env.API_BASE_URL}${img.url}`
+            }));
+        }
+
+        if (respuesta.adjuntos) {
+            respuesta.adjuntos = respuesta.adjuntos.map(adj => ({
+                ...adj,
+                url: `${process.env.API_BASE_URL}${adj.url}`
+            }));
+        }
+
+        // 8. Retornar respuesta
+        res.status(200).json({
+            success: true,
+            message: mensaje,
+            data: {
+                publicacion: respuesta,
+                archivosSubidos: archivosSubidos.map(a => ({
+                    filename: a.filename,
+                    originalName: a.originalName,
+                    url: a.urlAbsoluta,
+                    size: a.size
+                }))
+            }
+        });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({
+            success: false,
+            message: 'Error del servidor',
+            error: err.message
+        });
+    }
+};
+

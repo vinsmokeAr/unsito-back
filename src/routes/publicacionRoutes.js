@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const publicacionController = require('../controllers/publicacionController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/uploadMiddleware');
 
 /**
  * @swagger
@@ -143,6 +144,86 @@ router.post('/', authMiddleware, publicacionController.createPublicacion);
  *         description: Error del servidor
  */
 router.put('/:id', authMiddleware, publicacionController.updatePublicacion);
+
+/**
+ * @swagger
+ * /api/publicaciones/{id}/upload:
+ *   post:
+ *     summary: Subir archivos asociados a una publicación
+ *     description: Endpoint para subir imagen principal, imágenes de carousel o adjuntos a una publicación existente
+ *     tags: [Publicaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la publicación
+ *       - in: query
+ *         name: tipo
+ *         schema:
+ *           type: string
+ *           enum: [imagen_principal, imagenes_carousel, adjuntos]
+ *         required: true
+ *         description: Tipo de archivo a subir
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Archivos a subir (máximo 10)
+ *     responses:
+ *       200:
+ *         description: Archivos subidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Imagen principal actualizada exitosamente
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     publicacion:
+ *                       $ref: '#/components/schemas/Publicacion'
+ *                     archivosSubidos:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           filename:
+ *                             type: string
+ *                           originalName:
+ *                             type: string
+ *                           url:
+ *                             type: string
+ *                           size:
+ *                             type: integer
+ *       400:
+ *         description: Datos inválidos o tipo incorrecto
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Publicación no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.post('/:id/upload', authMiddleware, upload.array('files', 10), publicacionController.uploadPublicacionFiles);
+
 /**
  * @swagger
  * /api/publicaciones/{id}:
