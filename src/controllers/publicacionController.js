@@ -1,5 +1,6 @@
 const Publicacion = require('../models/Publicacion');
 const Categoria = require('../models/Categoria'); // To populate category name
+const logger = require('../utils/logger').createContextLogger('PublicacionController');
 
 // Función auxiliar para crear filtros de consulta
 const buildPublicationQuery = (req) => {
@@ -33,6 +34,7 @@ exports.getPublicaciones = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const query = buildPublicationQuery(req);
+        logger.info('Fetching publications', { page, limit, filters: req.query });
 
         const publicaciones = await Publicacion.find(query)
             .sort({ fecha_publicacion: -1 })
@@ -42,13 +44,23 @@ exports.getPublicaciones = async (req, res) => {
 
         const total = await Publicacion.countDocuments(query);
 
+        logger.info('Publications fetched successfully', {
+            count: publicaciones.length,
+            total,
+            page
+        });
+
         res.json({
             publicaciones,
             totalPages: Math.ceil(total / limit),
             currentPage: page
         });
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error fetching publications', {
+            error: err.message,
+            stack: err.stack,
+            query: req.query
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -58,12 +70,17 @@ exports.getPublicaciones = async (req, res) => {
 // @acceso público
 exports.getPublicacionesDestacadas = async (req, res) => {
     try {
+        logger.info('Fetching featured publications');
         const publicaciones = await Publicacion.find({ es_destacado: true })
             .sort({ fecha_publicacion: -1 })
             .populate('categoria', 'nombre');
+        logger.info('Featured publications fetched', { count: publicaciones.length });
         res.json(publicaciones);
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error fetching featured publications', {
+            error: err.message,
+            stack: err.stack
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -73,13 +90,23 @@ exports.getPublicacionesDestacadas = async (req, res) => {
 // @access Público
 exports.getPublicacionById = async (req, res) => {
     try {
+        logger.info('Fetching publication by ID', { publicacionId: req.params.id });
         const publicacion = await Publicacion.findById(req.params.id).populate('categoria', 'nombre');
         if (!publicacion) {
+            logger.warn('Publication not found', { publicacionId: req.params.id });
             return res.status(404).json({ msg: 'Publication not found' });
         }
+        logger.info('Publication fetched successfully', {
+            publicacionId: req.params.id,
+            titulo: publicacion.titulo
+        });
         res.json(publicacion);
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error fetching publication by ID', {
+            error: err.message,
+            stack: err.stack,
+            publicacionId: req.params.id
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -104,6 +131,8 @@ exports.createPublicacion = async (req, res) => {
     } = req.body;
 
     try {
+        logger.info('Creating new publication', { titulo, tipo, categoria, autor });
+
         const newPublicacion = new Publicacion({
             titulo,
             resumen,
@@ -120,9 +149,17 @@ exports.createPublicacion = async (req, res) => {
         });
 
         const publicacion = await newPublicacion.save();
+        logger.info('Publication created successfully', {
+            publicacionId: publicacion._id,
+            titulo: publicacion.titulo
+        });
         res.status(201).json(publicacion);
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error creating publication', {
+            error: err.message,
+            stack: err.stack,
+            titulo
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -162,8 +199,14 @@ exports.updatePublicacion = async (req, res) => {
     if (adjuntos) publicacionFields.adjuntos = adjuntos;
 
     try {
+        logger.info('Updating publication', {
+            publicacionId: req.params.id,
+            fields: Object.keys(publicacionFields)
+        });
+
         let publicacion = await Publicacion.findById(req.params.id);
         if (!publicacion) {
+            logger.warn('Publication not found for update', { publicacionId: req.params.id });
             return res.status(404).json({ msg: 'Publication not found' });
         }
 
@@ -173,9 +216,17 @@ exports.updatePublicacion = async (req, res) => {
             { new: true }
         ).populate('categoria', 'nombre');
 
+        logger.info('Publication updated successfully', {
+            publicacionId: req.params.id,
+            titulo: publicacion.titulo
+        });
         res.json(publicacion);
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error updating publication', {
+            error: err.message,
+            stack: err.stack,
+            publicacionId: req.params.id
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -185,14 +236,24 @@ exports.updatePublicacion = async (req, res) => {
 // @access Privado (Admin)
 exports.deletePublicacion = async (req, res) => {
     try {
+        logger.info('Deleting publication', { publicacionId: req.params.id });
         const publicacion = await Publicacion.findById(req.params.id);
         if (!publicacion) {
+            logger.warn('Publication not found for deletion', { publicacionId: req.params.id });
             return res.status(404).json({ msg: 'Publication not found' });
         }
         await Publicacion.deleteOne({ _id: req.params.id });
+        logger.info('Publication deleted successfully', {
+            publicacionId: req.params.id,
+            titulo: publicacion.titulo
+        });
         res.json({ msg: 'Publication removed' });
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error deleting publication', {
+            error: err.message,
+            stack: err.stack,
+            publicacionId: req.params.id
+        });
         res.status(500).send('Server Error');
     }
 };
@@ -202,9 +263,15 @@ exports.deletePublicacion = async (req, res) => {
 // @access Privado (Admin)
 exports.uploadPublicacionFiles = async (req, res) => {
     try {
+        logger.info('Upload files request for publication', {
+            publicacionId: req.params.id,
+            tipo: req.query.tipo
+        });
+
         // 1. Validar que la publicación existe
         const publicacion = await Publicacion.findById(req.params.id);
         if (!publicacion) {
+            logger.warn('Publication not found for file upload', { publicacionId: req.params.id });
             return res.status(404).json({
                 success: false,
                 message: 'Publicación no encontrada'
@@ -213,6 +280,7 @@ exports.uploadPublicacionFiles = async (req, res) => {
 
         // 2. Validar que se recibieron archivos
         if (!req.files || req.files.length === 0) {
+            logger.warn('No files received for upload', { publicacionId: req.params.id });
             return res.status(400).json({
                 success: false,
                 message: 'No se recibieron archivos'
@@ -224,6 +292,7 @@ exports.uploadPublicacionFiles = async (req, res) => {
         const tiposValidos = ['imagen_principal', 'imagenes_carousel', 'adjuntos'];
 
         if (!tipo || !tiposValidos.includes(tipo)) {
+            logger.warn('Invalid upload type', { tipo, publicacionId: req.params.id });
             return res.status(400).json({
                 success: false,
                 message: `Tipo inválido. Debe ser uno de: ${tiposValidos.join(', ')}`
@@ -305,6 +374,12 @@ exports.uploadPublicacionFiles = async (req, res) => {
         }
 
         // 8. Retornar respuesta
+        logger.info('Files uploaded successfully', {
+            publicacionId: req.params.id,
+            tipo,
+            filesCount: archivosSubidos.length
+        });
+
         res.status(200).json({
             success: true,
             message: mensaje,
@@ -320,7 +395,12 @@ exports.uploadPublicacionFiles = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err.message);
+        logger.error('Error uploading files', {
+            error: err.message,
+            stack: err.stack,
+            publicacionId: req.params.id,
+            tipo: req.query.tipo
+        });
         res.status(500).json({
             success: false,
             message: 'Error del servidor',
