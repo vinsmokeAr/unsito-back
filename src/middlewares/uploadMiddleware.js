@@ -1,37 +1,48 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Configurar motor de almacenamiento
+// Configurar el directorio de almacenamiento
+const uploadDir = path.join(__dirname, '../../uploads');
+
+// Crear el directorio si no existe
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configuración de almacenamiento de Multer
 const storage = multer.diskStorage({
-    destination: './uploads/',
-    filename: function(req, file, cb){
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    destination: function (req, file, cb) {
+        cb(null, uploadDir); // Carpeta donde se guardarán los archivos
+    },
+    filename: function (req, file, cb) {
+        // Generar un nombre único para el archivo
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        const basename = path.basename(file.originalname, ext);
+        cb(null, basename + '-' + uniqueSuffix + ext);
     }
 });
 
-// Inicializar la carga
+// Filtro para validar tipos de archivo (solo imágenes)
+const fileFilter = (req, file, cb) => {
+    // Tipos MIME permitidos
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes (JPEG, PNG, GIF, WebP, BMP)'), false);
+    }
+};
+
+// Configuración de Multer
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10000000 }, // 10MB limite
-    fileFilter: function(req, file, cb){
-        checkFileType(file, cb);
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // Límite de 5MB
     }
-}).single('file'); // 'file' es el nombre del campo del formulario
-
-// Comprobar tipo de archivo
-function checkFileType(file, cb){
-    // ext Permitido
-    const filetypes = /jpeg|jpg|png|gif|pdf/;
-    // comprobar ext
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // comprobar mime
-    const mimetype = filetypes.test(file.mimetype);
-
-    if(mimetype && extname){
-        return cb(null, true);
-    } else {
-        cb('Error: Images and PDFs Only!');
-    }
-}
+});
 
 module.exports = upload;
