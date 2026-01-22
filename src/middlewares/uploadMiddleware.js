@@ -2,8 +2,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configurar el directorio de almacenamiento
-const uploadDir = path.join(__dirname, '../../uploads');
+// Configurar el directorio de almacenamiento desde variable de entorno
+// En desarrollo: './uploads' (relativo al proyecto)
+// En producción: '/var/www/uploads' (ruta absoluta)
+const uploadDir = path.isAbsolute(process.env.UPLOADS_PATH || './uploads')
+    ? process.env.UPLOADS_PATH
+    : path.join(__dirname, '../../', process.env.UPLOADS_PATH || 'uploads');
 
 // Crear el directorio si no existe
 if (!fs.existsSync(uploadDir)) {
