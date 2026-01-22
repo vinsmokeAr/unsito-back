@@ -1,5 +1,12 @@
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
+
+// Create logs directory if it doesn't exist
+const logsDir = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
 
 // Define log format
 const logFormat = winston.format.combine(
@@ -44,12 +51,10 @@ const logger = winston.createLogger({
     ],
 });
 
-// If not in production, also log to console
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: consoleFormat,
-    }));
-}
+// Always log to console for debugging
+logger.add(new winston.transports.Console({
+    format: consoleFormat,
+}));
 
 // Helper function to create contextual logger
 logger.createContextLogger = (context) => {
