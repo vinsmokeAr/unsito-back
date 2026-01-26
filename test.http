@@ -70,19 +70,7 @@ Authorization: Bearer {{token}}
     "tipo": "Noticia",
     "categoria": "691acd0d8bf97e731c0b323a",
     "fecha_evento_inicio": "2021-01-01",
-    "fecha_evento_cierre": "2021-01-01",
-    "imagen_principal_url": "test",
-    "imagenes_carousel": [
-        {
-            "url": "test"
-        }
-    ],
-    "adjuntos": [
-        {
-            "titulo": "test",
-            "url": "test"
-        } 
-    ]
+    "fecha_evento_cierre": "2021-01-01"
 }
 
 ### Actualizar una publicación
